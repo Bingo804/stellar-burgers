@@ -12,7 +12,7 @@ import {
 } from '@pages';
 import { Preloader } from '@ui';
 import { useEffect } from 'react';
-import { Routes, Route, useNavigate } from 'react-router-dom';
+import { Routes, Route, useNavigate, useParams, useLocation } from 'react-router-dom';
 
 import { getIngredients } from '../../services/createSlice';
 import { useDispatch, useSelector } from '../../services/store';
@@ -20,7 +20,6 @@ import { getUserThunk } from '../../services/userSlice';
 import { ProtectedRoute } from '../protected-route/protectedroute';
 
 import type { AppContentProps } from './type';
-// import type { TIngredient } from '@utils-types';
 
 import '../../index.css';
 
@@ -50,9 +49,6 @@ const App = (): React.JSX.Element => {
 };
 
 export default App;
-
-/* Маршруты показываются только когда ингредиенты загружены: без них не
-   отрисовать ни конструктор, ни состав заказа. */
 const AppContent = ({
   ingredients,
   isLoading,
@@ -80,17 +76,40 @@ const AppContent = ({
   return <RouteComponent />;
 };
 
-const RouteComponent = (): React.JSX.Element => {
+const OrderModal = (): React.JSX.Element => {
+  const { number } = useParams();
+
   const navigate = useNavigate();
 
   const closeModal = (): void => {
     void navigate(-1);
   };
+
+  return (
+    <Modal title={`#${number}`} onClose={closeModal}>
+      <OrderInfo />
+    </Modal>
+  );
+};
+
+type TLocationState = {
+  background?: ReturnType<typeof useLocation>;
+};
+
+const RouteComponent = (): React.JSX.Element => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const background = (location.state as TLocationState | null)?.background;
+  const closeModal = (): void => {
+    void navigate(-1);
+  };
+
   return (
     <>
-      <Routes>
+      <Routes location={background ?? location}>
         <Route path="/" element={<ConstructorPage />} />
         <Route path="/feed" element={<Feed />} />
+
         <Route
           path="/login"
           element={
@@ -140,33 +159,64 @@ const RouteComponent = (): React.JSX.Element => {
           }
         />
         <Route
-          path="/feed/:number"
+          path="/ingredients/:id"
           element={
-            <Modal title="" onClose={closeModal}>
-              <OrderInfo />
-            </Modal>
+            <div className={styles.detailPageWrap}>
+              <h1 className={`${styles.detailHeader} text text_type_main-large`}>
+                Детали ингредиента
+              </h1>
+              <IngredientDetails />
+            </div>
           }
         />
         <Route
-          path="/ingredients/:id"
+          path="/feed/:number"
           element={
-            <Modal title="Детали ингредиента" onClose={closeModal}>
-              <IngredientDetails />
-            </Modal>
+            <div className={styles.detailPageWrap}>
+              <h1 className={`${styles.detailHeader} text text_type_main-large`}>
+                Детали заказа
+              </h1>
+              <OrderInfo />
+            </div>
           }
         />
         <Route
           path="/profile/orders/:number"
           element={
             <ProtectedRoute>
-              <Modal title="" onClose={closeModal}>
+              <div className={styles.detailPageWrap}>
+                <h1 className={`${styles.detailHeader} text text_type_main-large`}>
+                  Детали заказа
+                </h1>
                 <OrderInfo />
-              </Modal>
+              </div>
             </ProtectedRoute>
           }
         />
+
         <Route path="*" element={<NotFound404 />} />
       </Routes>
+      {background && (
+        <Routes>
+          <Route
+            path="/ingredients/:id"
+            element={
+              <Modal title="Детали ингредиента" onClose={closeModal}>
+                <IngredientDetails />
+              </Modal>
+            }
+          />
+          <Route path="/feed/:number" element={<OrderModal />} />
+          <Route
+            path="/profile/orders/:number"
+            element={
+              <ProtectedRoute>
+                <OrderModal />
+              </ProtectedRoute>
+            }
+          />
+        </Routes>
+      )}
     </>
   );
 };
