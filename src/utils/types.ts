@@ -42,9 +42,6 @@ export type TTabMode = 'bun' | 'sauce' | 'main';
 export type TConstructorState = {
   bun: TConstructorIngredient | null;
   ingredients: TConstructorIngredient[];
-  order: TOrder | null;
-  isLoading: boolean;
-  error: string | null;
 };
 
 export type TFeedState = {

@@ -22,9 +22,6 @@ export const DefaultConstructor: Story = {
     constructorItems: {
       bun: null,
       ingredients: [],
-      order: null,
-      isLoading: false,
-      error: null,
     },
     orderRequest: false,
     price: 0,

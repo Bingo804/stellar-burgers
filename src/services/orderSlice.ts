@@ -1,21 +1,27 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 
-import { getOrdersApi, getOrderByNumberApi } from '../utils/burger-api';
+import { getOrdersApi, getOrderByNumberApi, orderBurgerApi } from '../utils/burger-api';
 
 import type { TOrder } from '@utils-types';
 
 type TOrderState = {
   orders: TOrder[];
   currentOrder: TOrder | null;
+  createdOrder: TOrder | null;
   isLoading: boolean;
   error: string | null;
+  isCreating: boolean;
+  createError: string | null;
 };
 
 const initialState: TOrderState = {
   orders: [],
   currentOrder: null,
+  createdOrder: null,
   isLoading: false,
   error: null,
+  isCreating: false,
+  createError: null,
 };
 
 export const getOrdersThunk = createAsyncThunk('orders/getOrders', async () => {
@@ -35,10 +41,23 @@ export const getOrderByNumberThunk = createAsyncThunk(
     return response.orders[0];
   }
 );
+
+export const createOrder = createAsyncThunk(
+  'orders/createOrder',
+  async (ingredients: string[]) => {
+    const response = await orderBurgerApi(ingredients);
+    return response.order;
+  }
+);
+
 const orderSlice = createSlice({
   name: 'orders',
   initialState,
-  reducers: {},
+  reducers: {
+    clearOrder: (state) => {
+      state.createdOrder = null;
+    },
+  },
   extraReducers: (builder) => {
     builder
       .addCase(getOrdersThunk.pending, (state) => {
@@ -65,8 +84,23 @@ const orderSlice = createSlice({
       .addCase(getOrderByNumberThunk.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.error.message ?? 'Не удалось загрузить заказ';
+      })
+      .addCase(createOrder.pending, (state) => {
+        state.isCreating = true;
+        state.createError = null;
+        state.createdOrder = null;
+      })
+      .addCase(createOrder.fulfilled, (state, action) => {
+        state.isCreating = false;
+        state.createdOrder = action.payload;
+      })
+      .addCase(createOrder.rejected, (state, action) => {
+        state.isCreating = false;
+        state.createError = action.error.message ?? 'Ошибка создания заказа';
       });
   },
 });
+
+export const { clearOrder } = orderSlice.actions;
 
 export default orderSlice.reducer;

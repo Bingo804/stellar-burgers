@@ -2,9 +2,7 @@ import { ProfileMenuUI } from '@ui';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 import { useDispatch } from '../../services/store';
-import { clearUser } from '../../services/userSlice';
-import { logoutApi } from '../../utils/burger-api';
-import { deleteCookie } from '../../utils/cookie';
+import { logoutThunk } from '../../services/userSlice';
 
 export const ProfileMenu = (): React.JSX.Element => {
   const { pathname } = useLocation();
@@ -12,11 +10,9 @@ export const ProfileMenu = (): React.JSX.Element => {
   const dispatch = useDispatch();
 
   const handleLogout = (): void => {
-    void logoutApi()
+    void dispatch(logoutThunk())
+      .unwrap()
       .then(() => {
-        localStorage.removeItem('refreshToken');
-        deleteCookie('accessToken');
-        dispatch(clearUser());
         void navigate('/login', { replace: true });
       })
       .catch((error: unknown) => {

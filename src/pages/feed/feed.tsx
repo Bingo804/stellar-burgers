@@ -23,7 +23,9 @@ export const Feed = (): React.JSX.Element => {
   }
 
   if (error && !orders.length) {
-    return <p>Ошибка загрузки ленты: {error}</p>;
+    const errorMessage = error instanceof Error ? error.message : 'Неизвестная ошибка';
+
+    return <p>Ошибка загрузки ленты: {errorMessage}</p>;
   }
 
   return <FeedUI orders={orders} handleGetFeeds={handleGetFeeds} />;

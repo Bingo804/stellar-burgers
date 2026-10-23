@@ -5,10 +5,11 @@ import {
   getUserApi,
   registerUserApi,
   updateUserApi,
+  logoutApi,
 } from '../utils/burger-api';
-import { setCookie } from '../utils/cookie';
+import { setCookie, deleteCookie } from '../utils/cookie';
 
-import type { TRegisterData } from '../utils/burger-api';
+import type { TLoginData, TRegisterData } from '../utils/burger-api';
 import type { PayloadAction } from '@reduxjs/toolkit';
 import type { TUser } from '@utils-types';
 
@@ -28,7 +29,7 @@ const initialState: TUserState = {
 
 export const loginUserThunk = createAsyncThunk(
   'user/login',
-  async (data: { email: string; password: string }) => {
+  async (data: TLoginData) => {
     const response = await loginUserApi(data);
     localStorage.setItem('refreshToken', response.refreshToken);
     setCookie('accessToken', response.accessToken);
@@ -38,7 +39,7 @@ export const loginUserThunk = createAsyncThunk(
 
 export const registerUserThunk = createAsyncThunk(
   'user/register',
-  async (data: { name: string; email: string; password: string }) => {
+  async (data: TRegisterData) => {
     const response = await registerUserApi(data);
 
     localStorage.setItem('refreshToken', response.refreshToken);
@@ -60,6 +61,14 @@ export const updateUserThunk = createAsyncThunk(
     return response.user;
   }
 );
+
+export const logoutThunk = createAsyncThunk('user/logout', async () => {
+  await logoutApi();
+
+  localStorage.removeItem('refreshToken');
+  deleteCookie('accessToken');
+});
+
 const userSlice = createSlice({
   name: 'user',
   initialState,
@@ -72,6 +81,9 @@ const userSlice = createSlice({
     },
     clearUser: (state) => {
       state.user = null;
+    },
+    clearError: (state) => {
+      state.error = null;
     },
   },
   extraReducers: (builder) => {
@@ -96,10 +108,10 @@ const userSlice = createSlice({
         state.user = action.payload;
         state.isAuthChecked = true;
       })
-      .addCase(getUserThunk.rejected, (state, action) => {
+      .addCase(getUserThunk.rejected, (state) => {
         state.isLoading = false;
         state.isAuthChecked = true;
-        state.error = action.error.message ?? 'Пользователь не найден';
+        state.user = null;
       })
       .addCase(registerUserThunk.pending, (state) => {
         state.isLoading = true;
@@ -125,9 +137,15 @@ const userSlice = createSlice({
       .addCase(updateUserThunk.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.error.message ?? 'Ошибка обновления профиля';
+      })
+      .addCase(logoutThunk.fulfilled, (state) => {
+        state.user = null;
+        state.isAuthChecked = true;
+        state.error = null;
       });
   },
 });
 
 export default userSlice.reducer;
-export const { setUser, setAuthChecked, clearUser } = userSlice.actions;
+
+export const { setUser, setAuthChecked, clearUser, clearError } = userSlice.actions;

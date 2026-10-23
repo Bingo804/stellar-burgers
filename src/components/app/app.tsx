@@ -16,7 +16,8 @@ import { Routes, Route, useNavigate, useParams, useLocation } from 'react-router
 
 import { getIngredients } from '../../services/createSlice';
 import { useDispatch, useSelector } from '../../services/store';
-import { getUserThunk } from '../../services/userSlice';
+import { getUserThunk, setAuthChecked } from '../../services/userSlice';
+import { getCookie } from '../../utils/cookie';
 import { ProtectedRoute } from '../protected-route/protectedroute';
 
 import type { AppContentProps } from './type';
@@ -30,7 +31,12 @@ const App = (): React.JSX.Element => {
 
   useEffect(() => {
     void dispatch(getIngredients());
-    void dispatch(getUserThunk());
+
+    if (getCookie('accessToken')) {
+      void dispatch(getUserThunk());
+    } else {
+      dispatch(setAuthChecked(true));
+    }
   }, [dispatch]);
 
   const ingredients = useSelector((state) => state.ingredients.ingredients);
