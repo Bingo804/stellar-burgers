@@ -1,9 +1,13 @@
 import { ProfileUI } from '@ui-pages';
 import { type SyntheticEvent, useEffect, useState } from 'react';
 
+import { useSelector, useDispatch } from '../../services/store';
+import { updateUserThunk } from '../../services/userSlice';
+
 export const Profile = (): React.JSX.Element => {
   /** TODO: Взять переменную из стора */
-  const user = {
+  const dispatch = useDispatch();
+  const user = useSelector((state) => state.user.user) ?? {
     name: '',
     email: '',
   };
@@ -17,10 +21,10 @@ export const Profile = (): React.JSX.Element => {
   useEffect(() => {
     setFormValue((prevState) => ({
       ...prevState,
-      name: user?.name || '',
-      email: user?.email || '',
+      name: user.name,
+      email: user.email,
     }));
-  }, [user]);
+  }, [user.name, user.email]);
 
   const isFormChanged =
     formValue.name !== user?.name ||
@@ -29,6 +33,21 @@ export const Profile = (): React.JSX.Element => {
 
   const handleSubmit = (e: SyntheticEvent): void => {
     e.preventDefault();
+
+    void dispatch(
+      updateUserThunk({
+        name: formValue.name,
+        email: formValue.email,
+        ...(formValue.password ? { password: formValue.password } : {}),
+      })
+    )
+      .unwrap()
+      .then(() => {
+        setFormValue((prevState) => ({
+          ...prevState,
+          password: '',
+        }));
+      });
   };
 
   const handleCancel = (e: SyntheticEvent): void => {
