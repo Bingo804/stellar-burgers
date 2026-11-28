@@ -18,36 +18,51 @@ describe('Редьюсер конструктора бургера', () => {
       ingredients: [],
     });
   });
+
   test('добавляет булку в конструктор', () => {
     const mockBun = {
       ...mockIngredients[0],
       id: '1',
     };
+
     const state = burgerConstructorReducer(undefined, addBun(mockBun));
+
     expect(state.bun).toEqual(mockBun);
   });
+
   test('добавляет ингредиент в конструктор', () => {
     const mockIngredient = {
       ...mockIngredients[0],
       type: 'main',
       id: '2',
     };
+
     const state = burgerConstructorReducer(undefined, addIngredient(mockIngredient));
+
     expect(state.ingredients).toEqual([mockIngredient]);
   });
+
   test('удаляет ингредиент из конструктора', () => {
-    const mockIngredient = {
+    const filling = {
       ...mockIngredients[0],
       type: 'main',
-      id: '2',
     };
 
-    const state = burgerConstructorReducer(undefined, addIngredient(mockIngredient));
+    const first = { ...filling, id: '1' };
+    const second = { ...filling, id: '2' };
+    const third = { ...filling, id: '3' };
 
-    const newState = burgerConstructorReducer(state, removeIngredient('2'));
+    const state = burgerConstructorReducer(
+      {
+        bun: null,
+        ingredients: [first, second, third],
+      },
+      removeIngredient('2')
+    );
 
-    expect(newState.ingredients).toEqual([]);
+    expect(state.ingredients).toEqual([first, third]);
   });
+
   test('перемещает ингредиент в конструкторе', () => {
     const ingredients = [
       { ...mockIngredients[0], type: 'main', id: '1' },
@@ -70,6 +85,7 @@ describe('Редьюсер конструктора бургера', () => {
 
     expect(newState.ingredients.map((item) => item.id)).toEqual(['2', '3', '1']);
   });
+
   test('очищает конструктор после успешного создания заказа', () => {
     const mockBun = {
       ...mockIngredients[0],

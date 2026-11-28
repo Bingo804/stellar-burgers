@@ -8,7 +8,7 @@ FN:42,extraReducers
 FNF:5
 FNH:5
 FNDA:2,addBun
-FNDA:6,addIngredient
+FNDA:5,addIngredient
 FNDA:1,removeIngredient
 FNDA:1,moveIngredient
 FNDA:1,extraReducers
@@ -33,7 +33,7 @@ DA:18,2
 DA:19,1
 DA:20,1
 DA:21,1
-DA:22,6
+DA:22,5
 DA:23,1
 DA:24,1
 DA:25,1
@@ -68,9 +68,9 @@ DA:53,1
 LF:53
 LH:53
 BRDA:17,0,0,2
-BRDA:21,1,0,6
+BRDA:21,1,0,5
 BRDA:25,2,0,1
-BRDA:26,3,0,1
+BRDA:26,3,0,3
 BRDA:29,4,0,1
 BRDA:42,5,0,1
 BRDA:43,6,0,1
